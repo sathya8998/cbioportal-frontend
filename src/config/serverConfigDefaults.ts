@@ -1,7 +1,9 @@
-import { IServerConfig } from './IAppConfig';
+import { IServerConfig, IServerConfigWithNewDateField } from './IAppConfig';
 
-export const ServerConfigDefaults: Partial<IServerConfig> = {
-    app_version: '1.0',
+export const ServerConfigDefaults: Partial<IServerConfigWithNewDateField> = {
+    app_name: null,
+    app_version: null,
+    newDateField: 'defaultDateField',
     api_cache_limit: 450,
     dat_method: 'none',
     disabled_tabs: '',

@@ -250,7 +250,9 @@ import {
 import { RecruitingStatus } from 'shared/enums/ClinicalTrialsGovRecruitingStatus';
 import { ageAsNumber } from '../clinicalTrialMatch/utils/AgeSexConverter';
 import { City } from '../clinicalTrialMatch/ClinicalTrialMatchSelectUtil';
-
+import PatientViewMutationsDataStore from '../mutation/PatientViewMutationsDataStore';
+import { IServerConfig } from '../../../config/IAppConfig';
+import ServerConfigDefaults from '../../../config/serverConfigDefaults';
 type PageMode = 'patient' | 'sample';
 type ResourceId = string;
 
@@ -361,11 +363,14 @@ function transformClinicalInformationToStoreShape(
         clinicalData: clinicalDataPatient,
     };
     const samples = groupBySampleId(sampleIds, clinicalDataSample);
-    const rv = {
-        patient,
-        samples,
+    const rv: ClinicalInformationData = {
+        clinicalData: [], // Populate with appropriate data
+        events: [], // Populate with appropriate data
     };
 
+    // Assuming you have a function to populate clinicalData and events from patient and samples
+    // rv.clinicalData = populateClinicalData(patient);
+    // rv.events = populateEvents(samples);
     return rv;
 }
 
@@ -405,8 +410,19 @@ class ClinicalTrialsSearchParams {
         this.maximumDistance = maximumDistance;
     }
 }
-
 export class PatientViewPageStore {
+    mutationProfileId: string;
+    patientViewMutationDataStore: PatientViewMutationsDataStore;
+    caseMetaData: {
+        color: { [s: string]: string };
+        label: { [s: string]: string };
+        index: { [s: string]: number };
+    };
+    @observable referenceDate: Date | null = new Date();
+    @observable useAbsoluteDates = false;
+    public internalClient: CBioPortalAPIInternal;
+    private serverConfig: IServerConfig;
+
     constructor(
         private appStore: AppStore,
         studyId: string,
@@ -415,20 +431,38 @@ export class PatientViewPageStore {
         cohortIds?: string[]
     ) {
         makeObservable(this);
-
         if (cohortIds) {
             this.patientIdsInCohort = cohortIds;
         }
-        this.internalClient = internalClient;
-
-        this._patientId = patientId;
-
-        this._sampleId = sampleId;
-
         this.studyId = studyId;
+        this._patientId = patientId;
+        this._sampleId = sampleId;
+        this.internalClient = new CBioPortalAPIInternal();
+        this.serverConfig = ServerConfigDefaults as IServerConfig;
     }
 
-    public internalClient: CBioPortalAPIInternal;
+    @action
+    setReferenceDate(date: Date) {
+        this.referenceDate = date;
+    }
+
+    @action
+    toggleDateType() {
+        this.useAbsoluteDates = !this.useAbsoluteDates;
+    }
+
+    getDate(eventDate: number) {
+        const dateField = (this.serverConfig as any).newDateField;
+        if (this.useAbsoluteDates && this.referenceDate) {
+            return new Date(
+                this.referenceDate.getTime() + eventDate * 24 * 60 * 60 * 1000
+            );
+        } else if (dateField) {
+            return eventDate;
+        } else {
+            return eventDate;
+        }
+    }
 
     @observable
     public isClinicalTrialsLoading: boolean = false;
@@ -1438,7 +1472,10 @@ export class PatientViewPageStore {
                     this.clinicalDataForSamples.result
                 ),
         },
-        {}
+        {
+            events: [],
+            clinicalData: undefined,
+        }
     );
 
     readonly patientViewDataForAllSamplesForPatient = remoteData<
