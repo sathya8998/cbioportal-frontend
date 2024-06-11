@@ -1,8 +1,4 @@
-// Import the necessary interfaces
-import { IServerConfig as AppConfigServerConfig } from './IAppConfig';
-
-// Extend the IServerConfig interface with the newDateField property
-export interface IServerConfigWithNewDateField extends AppConfigServerConfig {
+export interface IAppConfig {
     apiRoot?: string;
     baseUrl?: string;
     basePath?: string;
@@ -10,7 +6,6 @@ export interface IServerConfigWithNewDateField extends AppConfigServerConfig {
     frontendUrl?: string;
     serverConfig: IServerConfig;
     hide_login?: boolean;
-    newDateField: string;
 }
 
 export interface ILoadConfig {
