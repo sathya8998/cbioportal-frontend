@@ -25,7 +25,11 @@ import client from '../../../shared/api/cbioportalClientInstance';
 import internalClient from '../../../shared/api/cbioportalInternalClientInstance';
 import oncokbClient from '../../../shared/api/oncokbClientInstance';
 import { computed, observable, action, makeObservable } from 'mobx';
-import { remoteData, stringListToSet } from 'cbioportal-frontend-commons';
+import {
+    DataType,
+    remoteData,
+    stringListToSet,
+} from 'cbioportal-frontend-commons';
 import { IGisticData } from 'shared/model/Gistic';
 import { cached, labelMobxPromises } from 'mobxpromise';
 import MrnaExprRankCache from 'shared/cache/MrnaExprRankCache';
@@ -2776,6 +2780,43 @@ export class PatientViewPageStore {
             },
         },
         []
+    );
+    readonly getReferenceDateFromPatientData = remoteData<Date>(
+        {
+            await: () => [this.patientViewData],
+            invoke: async () => {
+                const referenceDateField = getServerConfig()
+                    .reference_date_field;
+                const patientData = await this.patientViewData;
+                const clinDat = patientData.result.patient?.clinicalData;
+                const referenceDateEntities: ClinicalData[] = [];
+
+                for (let i = 0; i < clinDat!.length; i++) {
+                    if (
+                        clinDat![i].clinicalAttributeId === referenceDateField
+                    ) {
+                        referenceDateEntities.push(clinDat![i]);
+                    }
+                }
+
+                if (referenceDateEntities.length > 1) {
+                    console.warn('Multiple reference dates found');
+                }
+
+                if (referenceDateEntities.length === 0) {
+                    throw new Error('No reference date found');
+                }
+
+                const referenceDateString = referenceDateEntities[0].value;
+                const referenceDate = new Date(referenceDateString);
+                if (isNaN(referenceDate.getTime())) {
+                    throw new Error('Invalid date format');
+                }
+
+                return referenceDate;
+            },
+        },
+        new Date(0)
     );
 
     updateMtbs = async (mtbs: IMtb[]): Promise<boolean> => {
