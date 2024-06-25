@@ -40,8 +40,13 @@ export interface ITimelineProps {
     samples: Sample[];
     mutationProfileId: string;
     headerWidth?: number;
+    referenceDate: Date | null; // Added referenceDate here
 }
 
+// Extended the existing ITimelineConfig type
+interface ITimelineConfigWithReferenceDate extends ITimelineConfig {
+    referenceDate?: Date | null; // Added referenceDate property
+}
 const TimelineWrapper: React.FunctionComponent<ITimelineProps> = observer(
     function({
         data,
@@ -49,11 +54,11 @@ const TimelineWrapper: React.FunctionComponent<ITimelineProps> = observer(
         sampleManager,
         width,
         headerWidth,
+        referenceDate, // Destructured referenceDate here
     }: ITimelineProps) {
         const [events, setEvents] = useState<
             TimelineTrackSpecification[] | null
         >(null);
-
         const [store, setStore] = useState<TimelineStore | null>(null);
 
         useEffect(() => {
@@ -70,11 +75,15 @@ const TimelineWrapper: React.FunctionComponent<ITimelineProps> = observer(
                 'private.cbioportal.mskcc.org',
             ].includes(window.location.hostname);
 
-            const baseConfig: ITimelineConfig = buildBaseConfig(
+            // Use the extended interface
+            const baseConfig: ITimelineConfigWithReferenceDate = buildBaseConfig(
                 sampleManager,
                 caseMetaData
             );
 
+            if (referenceDate) {
+                baseConfig.referenceDate = referenceDate; // Added referenceDate to config if present
+            }
             if (isGenieBpcStudy) {
                 configureGenieTimeline(baseConfig);
             }
@@ -117,7 +126,7 @@ const TimelineWrapper: React.FunctionComponent<ITimelineProps> = observer(
             const store = new TimelineStore(trackSpecifications);
 
             setStore(store);
-        }, []);
+        }, [data, caseMetaData, sampleManager, referenceDate]); // Added referenceDate to dependencies
 
         if (store) {
             return (

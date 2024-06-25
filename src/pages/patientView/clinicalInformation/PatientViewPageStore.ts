@@ -25,11 +25,7 @@ import client from '../../../shared/api/cbioportalClientInstance';
 import internalClient from '../../../shared/api/cbioportalInternalClientInstance';
 import oncokbClient from '../../../shared/api/oncokbClientInstance';
 import { computed, observable, action, makeObservable } from 'mobx';
-import {
-    DataType,
-    remoteData,
-    stringListToSet,
-} from 'cbioportal-frontend-commons';
+import { remoteData, stringListToSet } from 'cbioportal-frontend-commons';
 import { IGisticData } from 'shared/model/Gistic';
 import { cached, labelMobxPromises } from 'mobxpromise';
 import MrnaExprRankCache from 'shared/cache/MrnaExprRankCache';
@@ -2781,7 +2777,8 @@ export class PatientViewPageStore {
         },
         []
     );
-    readonly getReferenceDateFromPatientData = remoteData<Date>(
+
+    readonly getReferenceDateFromPatientData = remoteData<Date | null>(
         {
             await: () => [this.patientViewData],
             invoke: async () => {
@@ -2804,19 +2801,21 @@ export class PatientViewPageStore {
                 }
 
                 if (referenceDateEntities.length === 0) {
-                    throw new Error('No reference date found');
+                    console.warn('No reference date found');
+                    return null;
                 }
 
                 const referenceDateString = referenceDateEntities[0].value;
                 const referenceDate = new Date(referenceDateString);
                 if (isNaN(referenceDate.getTime())) {
-                    throw new Error('Invalid date format');
+                    console.warn('Invalid date format');
+                    return null;
                 }
 
                 return referenceDate;
             },
         },
-        new Date(0)
+        null
     );
 
     updateMtbs = async (mtbs: IMtb[]): Promise<boolean> => {

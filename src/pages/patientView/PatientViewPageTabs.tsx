@@ -77,6 +77,10 @@ export function patientViewTabs(
     urlWrapper: PatientViewUrlWrapper,
     sampleManager: SampleManager | null
 ) {
+    const referenceDate =
+        pageInstance.patientViewPageStore.getReferenceDateFromPatientData
+            .result; // Get referenceDate here
+
     return (
         <MSKTabs
             id="patientViewPageTabs"
@@ -90,14 +94,16 @@ export function patientViewTabs(
                 <HelpWidget path={urlWrapper.routing.location.pathname} />
             }
         >
-            {tabs(pageInstance, sampleManager)}
+            {tabs(pageInstance, sampleManager, referenceDate)} //Pass
+            referenceDate here
         </MSKTabs>
     );
 }
 
 export function tabs(
     pageComponent: PatientViewPageInner,
-    sampleManager: SampleManager | null
+    sampleManager: SampleManager | null,
+    referenceDate: Date | null // Added referenceDate parameter
 ) {
     const tabs: JSX.Element[] = [];
     tabs.push(
@@ -142,6 +148,7 @@ export function tabs(
                                     pageComponent.patientViewPageStore
                                         .mutationMolecularProfileId.result!
                                 }
+                                referenceDate={referenceDate} // Passed referenceDate here
                             />
                         </div>
                         <hr />
