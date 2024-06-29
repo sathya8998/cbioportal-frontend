@@ -41,6 +41,7 @@ interface ITimelineProps {
     hideXAxis?: boolean;
     disableZoom?: boolean;
     headerWidth?: number;
+    referenceDate?: Date | null | undefined;
 }
 
 function handleMouseEvents(
@@ -278,6 +279,7 @@ const Timeline: React.FunctionComponent<ITimelineProps> = observer(function({
     hideXAxis,
     headerWidth,
     disableZoom,
+    referenceDate = null, // Destructure referenceDate here
 }: ITimelineProps) {
     const tracks = store.data;
     const SCROLLBAR_PADDING = 15;
@@ -401,6 +403,12 @@ const Timeline: React.FunctionComponent<ITimelineProps> = observer(function({
                     </div>
                 )}
             </div>
+            {/* Display the reference date if it exists */}
+            {referenceDate && (
+                <div className="tl-timeline-reference-date">
+                    Reference Date: {referenceDate.toDateString()}
+                </div>
+            )}
             <style ref={refs.hoverStyleTag} />
             <div style={{ flexBasis: width - 28, display: 'flex' }}>
                 {' '}

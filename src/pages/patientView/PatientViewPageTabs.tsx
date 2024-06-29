@@ -77,9 +77,10 @@ export function patientViewTabs(
     urlWrapper: PatientViewUrlWrapper,
     sampleManager: SampleManager | null
 ) {
+    // Retrieve referenceDate here
     const referenceDate =
         pageInstance.patientViewPageStore.getReferenceDateFromPatientData
-            .result; // Get referenceDate here
+            .result || null;
 
     return (
         <MSKTabs
@@ -94,7 +95,7 @@ export function patientViewTabs(
                 <HelpWidget path={urlWrapper.routing.location.pathname} />
             }
         >
-            {tabs(pageInstance, sampleManager, referenceDate)} //Pass
+            {tabs(pageInstance, sampleManager, referenceDate)} //Passed
             referenceDate here
         </MSKTabs>
     );

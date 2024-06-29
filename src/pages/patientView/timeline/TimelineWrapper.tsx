@@ -40,12 +40,12 @@ export interface ITimelineProps {
     samples: Sample[];
     mutationProfileId: string;
     headerWidth?: number;
-    referenceDate: Date | null; // Added referenceDate here
+    referenceDate?: Date | null; // Added referenceDate to props
 }
 
 // Extended the existing ITimelineConfig type
 interface ITimelineConfigWithReferenceDate extends ITimelineConfig {
-    referenceDate?: Date | null; // Added referenceDate property
+    referenceDate?: Date | null | undefined; // Added referenceDate property
 }
 const TimelineWrapper: React.FunctionComponent<ITimelineProps> = observer(
     function({
@@ -54,7 +54,7 @@ const TimelineWrapper: React.FunctionComponent<ITimelineProps> = observer(
         sampleManager,
         width,
         headerWidth,
-        referenceDate, // Destructured referenceDate here
+        referenceDate = null, // Destructured referenceDate here
     }: ITimelineProps) {
         const [events, setEvents] = useState<
             TimelineTrackSpecification[] | null
@@ -137,6 +137,7 @@ const TimelineWrapper: React.FunctionComponent<ITimelineProps> = observer(
                                 store={store}
                                 width={width}
                                 headerWidth={headerWidth}
+                                referenceDate={referenceDate} //Passed referenceDate to Timeline
                                 onClickDownload={() =>
                                     downloadZippedTracks(data)
                                 }
